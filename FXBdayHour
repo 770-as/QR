@@ -1,0 +1,36 @@
+from quantrocket.moonshot import scan_parameters
+from moonchart import ParamscanTearsheet
+from quantrocket.moonshot import backtest
+from moonchart import Tearsheet
+
+EUR_START_HOUR = 4
+EUR_END_HOUR = 12
+
+# Define your strategy and output file
+strategy_code = "fx-bizday"
+output_file = "fx_bizday_scan_results.csv"
+
+# Run the scan across a range of hours
+# We test entering between 1 AM and 5 AM, and exiting between 10 AM and 2 PM
+scan_parameters(strategy_code,
+                start_date="2020-01-01",
+                end_date="2023-12-31",
+                param1="EUR_START_HOUR", 
+                vals1=[1, 2, 3, 4, 5],
+                param2="EUR_END_HOUR", 
+                vals2=[10, 11, 12, 13, 14],
+                filepath=output_file)
+
+
+# Load the results and display the heatmap
+# We usually look at the Sharpe Ratio to find the best risk-adjusted hours
+Tearsheet.from_moonshot_csv(output_file, heatmap="Sharpe")
+
+# Run the backtest with your optimized code
+backtest(strategy_code,
+         start_date="2020-01-01",
+         end_date="2023-12-31",
+         filepath="final_backtest_results.csv")
+
+# View the final performance (Returns, Drawdowns, Sharpe)
+Tearsheet.from_moonshot_csv("final_backtest_results.csv")
