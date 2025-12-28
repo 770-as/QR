@@ -1,0 +1,25 @@
+import time
+import numpy as np
+
+# הגדרת נכסים ופרמטרים
+COMMODITIES = ['XAUUSD', 'XTIUSD', 'XCUUSD', 'XPTUSD', 'XNGUSD']
+MIN_GAP = 0.12 # פער מינימלי לכניסה (מותאם לעמלות)
+MAX_LOTS = 0.01 # שימוש במיקרו-לוטים לשמירה על הון קטן
+
+def check_arbitrage(symbol, price_broker_a, price_broker_b):
+    gap = price_broker_a - price_broker_b
+    
+    # אופטימיזציה: כניסה רק אם הפער משמעותי סטטיסטית
+    if abs(gap) > MIN_GAP:
+        if gap > 0:
+            # ברוקר א' יקר מדי -> מכירה ב-א', קנייה ב-ב'
+            execute_trade(symbol, "SELL", "BUY")
+        else:
+            # ברוקר ב' יקר מדי -> קנייה ב-א', מכירה ב-ב'
+            execute_trade(symbol, "BUY", "SELL")
+
+def execute_trade(symbol, action_a, action_b):
+    print(f"Executing Arb on {symbol}: Broker A {action_a} | Broker B {action_b}")
+    # כאן נכנסות פקודות ה-FIX API לשני הברוקרים במקביל
+    # broker_a.send_order(symbol, action_a, MAX_LOTS)
+    # broker_b.send_order(symbol, action_b, MAX_LOTS)
