@@ -29,12 +29,6 @@ def onMessageReceived(client, response):
         # לוגיקת השוואה בין המשתנים של ברוקר א' ו-ב'
         print(f"Update: {symbol} at {price}")
 
-# הגדרות חיבור (יש להזין פרטים מה-cTrader FIX API)
-config_a = {
-    "Host": "h50.p.ctrader.com", "Port": 5202,
-    "SenderCompID": "broker_a_id", "Password": "password_a",
-    "TargetCompID": "cServer"
-}
 
 # הפעלת החיבורים
 client_a = Client(config_a["Host"], config_a["Port"])
@@ -48,17 +42,6 @@ reactor.run()
 
 
 
-
-
-def send_telegram_alert(message):
-    token = "8518584699:AAEyURt7m_FmpVsQncSM3H0aN_vxqtuxEBs"
-    chat_id = "כאן_שמים_את_ה-ID_שלך" # אפשר להוציא בעזרת בוט שנקרא @userinfobot
-    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
-    
-    try:
-        requests.get(url)
-    except Exception as e:
-        print(f"Error sending telegram: {e}")
 
 # דוגמה לשימוש בתוך בוט הארביטראז'
 def monitor_balance(current_balance):
