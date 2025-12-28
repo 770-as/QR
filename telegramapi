@@ -1,0 +1,69 @@
+from twisted.internet import reactor
+from ctrader_fix import *
+import json
+import requests
+
+
+# פונקציה לחישוב ההזדמנות
+def check_for_arbitrage(symbol, price_a, price_b):
+    gap = price_a - price_b
+    threshold = 0.15  # סף רווח מינימלי (מותאם לסכום קטן)
+    
+    if abs(gap) > threshold:
+        if gap > 0:
+            print(f"SELL A | BUY B - Gap: {gap}")
+            # כאן מוסיפים פקודות שליחה:
+            # client_a.send(OrderRequest(...))
+            # client_b.send(OrderRequest(...))
+        else:
+            print(f"BUY A | SELL B - Gap: {gap}")
+
+# טיפול בהודעות שמתקבלות מהבורסה
+def onMessageReceived(client, response):
+    msg_type = response.getFieldValue(35)
+    
+    # אם זו הודעת מחיר (Market Data)
+    if msg_type == "W" or msg_type == "X":
+        symbol = response.getFieldValue(55)
+        price = float(response.getFieldValue(270))
+        # לוגיקת השוואה בין המשתנים של ברוקר א' ו-ב'
+        print(f"Update: {symbol} at {price}")
+
+# הגדרות חיבור (יש להזין פרטים מה-cTrader FIX API)
+config_a = {
+    "Host": "h50.p.ctrader.com", "Port": 5202,
+    "SenderCompID": "broker_a_id", "Password": "password_a",
+    "TargetCompID": "cServer"
+}
+
+# הפעלת החיבורים
+client_a = Client(config_a["Host"], config_a["Port"])
+client_a.setMessageReceivedCallback(onMessageReceived)
+client_a.startService()
+
+print("Bot is running on VPS...")
+reactor.run()
+
+
+
+
+
+
+
+def send_telegram_alert(message):
+    token = "8518584699:AAEyURt7m_FmpVsQncSM3H0aN_vxqtuxEBs"
+    chat_id = "כאן_שמים_את_ה-ID_שלך" # אפשר להוציא בעזרת בוט שנקרא @userinfobot
+    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
+    
+    try:
+        requests.get(url)
+    except Exception as e:
+        print(f"Error sending telegram: {e}")
+
+# דוגמה לשימוש בתוך בוט הארביטראז'
+def monitor_balance(current_balance):
+    MIN_BALANCE = 100.0 # סף התראה (למשל 100 דולר)
+    
+    if current_balance < MIN_BALANCE:
+        alert_msg = f"⚠️ אזהרה! יתרה נמוכה בברוקר א': {current_balance}$ \nנא לאזן את החשבון בעזרת Skrill!"
+        send_telegram_alert(alert_msg)
